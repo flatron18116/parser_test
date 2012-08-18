@@ -1,11 +1,6 @@
 <?php 
-require_once("Benchmark/Timer.php");
-
-$timer = new Benchmark_Timer;
-$timer->start();
-$timer->setMarker(開始);
-
 //config
+
 include_once('lib/simplehtmldom_1_5/simple_html_dom.php');
 $data = array();
 $g_url = array();
@@ -18,6 +13,14 @@ $g_url = preg_split('/(\r\n|\r|\n)/', $_POST['urllist']);
 //空行削除
 $g_url = array_merge(array_diff($g_url,array("")));
 
+// ログインデータryushare
+$id = array(
+		'login'    => '3776481',
+		'password' => 'yr2y0n5j0e'
+);
+// ログインクッキーを取得
+$iCookies = iLogin($id);
+
 //proc
 //URL数分ループ
 foreach ($g_url as $d_url ) {
@@ -25,31 +28,134 @@ foreach ($g_url as $d_url ) {
 	$d_html;
 	$d_host;//host名
 	$d_title;//title
-	$timer->setMarker(a);
+
 	//host名取得
 	$tmp_url = parse_url($d_url);
 	$d_host = $tmp_url['host'];//host名でパースルールを振り分ける
-	$timer->setMarker(b);
-	//解析用のhtmlを取得
-	$d_html   = file_get_html($d_url);
-	$timer->setMarker(c);
-	//src
-	$d_data[] = '<a href="'.$d_url.'">src</a>';
-	//title
-	$d_data[] = makeTitleString($d_host,$d_html);
-	//link
-	$d_data[] = makeLinkHtml($d_host,$d_html,$g_storage);
+
+	//subumit用のparamを取得
+	$param = iGetParam($d_url, $iCookies);
+	//DLurlを取得
+	$d_data[] = iGetUrl($d_url, $iCookies, $param);
 	
+	//src
+	//$d_data[] = '<a href="'.$d_url.'">src</a>';
+	//title
+	//$d_data[] = makeTitleString($d_host,$d_html);
+	//link
+	//$d_data[] = makeLinkHtml($d_host,$d_html,$g_storage);
+
 	//結果表示配列にアサイン
 	$data[] = $d_data; 
-	$timer->setMarker(d);
-	//コンテキストの解放
-	$d_html->clear();
-}
-$timer->stop();
-$timer->display();
 
-echo $time2 . '<br />';
+	//コンテキストの解放
+	//$d_html->clear();
+}
+
+/**
+ * ログイン
+ *
+ * @param array $data ログインデータ
+ * @return array $cookies クッキー
+ */
+
+function iLogin($data)
+{
+	$data = http_build_query($data + array('op' => 'login','redirect' => 'http://ryushare.com/'), '', '&');
+	$context = stream_context_create(array(
+			'http' => array(
+					'method'  => 'POST',
+					'header'  => implode("\r\n", array(
+							'Content-Type: application/x-www-form-urlencoded',
+							'Content-Length: ' . strlen($data)
+					)),
+					'content' => $data
+			)
+	));
+	file_get_contents('http://ryushare.com/', false, $context);
+	$cookies = array();
+	foreach ($http_response_header as $r) {
+		if (strpos($r, 'Set-Cookie') === false) {
+			continue;
+		}
+		$c = explode(' ', $r);
+		$c = str_replace(';', '', $c[1]);
+		$cookies[] = $c;
+	}
+	return $cookies;
+}
+
+function iGetParam($url, $cookies)
+{
+	//$data = http_build_query($data, '', '&');
+	$context = stream_context_create(array(
+			'http' => array(
+					'method'  => 'GET',
+					'header'  => implode("\r\n", array(
+							'Cookie: ' . implode('; ', $cookies)
+					))
+			)
+	));
+	$html = file_get_html($url, false, $context);
+	return getParamHtml($html);
+}
+
+function iGetUrl($url, $cookies, $data)
+{
+	$data = http_build_query($data, '', '&');
+	$context = stream_context_create(array(
+			'http' => array(
+					'method'  => 'POST',
+					'header'  => implode("\r\n", array(
+							'Cookie: ' . implode('; ', $cookies),
+							'Content-Type: application/x-www-form-urlencoded',
+							'Content-Length: ' . strlen($data)
+					)),
+					'content' => $data
+			)
+	));
+	$html = file_get_html($url, false, $context);
+
+	return getUrlHtml($html);
+}
+
+//paramを抽出して返す
+function getParamHtml(&$html,$g_storage = null){
+	$param = array();
+
+	//if(preg_match('/newidols\.net/', $host)){//http://newidols.net/
+		foreach($html->find('input[type="hidden"]') as $e) {
+			$param[$e->name] = $e->value;
+		}
+	//} else if(preg_match('/idolex\.net/', $host)) {//http://idolex.net/
+		//poc
+
+	//} else if(preg_match('/javbest\.net/', $host)) {//http://javbest.net/
+		//poc
+
+	//}
+	//var_dump($param);
+	$html->clear();
+	return $param;
+}
+
+//DLurlを抽出して返す
+function getUrlHtml(&$html,$g_storage = null){
+	$url = "";
+	//if(preg_match('/newidols\.net/', $host)){//http://newidols.net/
+	foreach($html->find('#content a') as $e) {
+		$url = $e->href;
+	}
+	//} else if(preg_match('/idolex\.net/', $host)) {//http://idolex.net/
+		//poc
+
+	//} else if(preg_match('/javbest\.net/', $host)) {//http://javbest.net/
+	//poc
+
+	//}
+	$html->clear();
+	return $url;
+}
 //ページタイトルを整形して返す
 function makeTitleString($host,&$html){
 	//config
@@ -117,32 +223,16 @@ function makeLinkHtml($host,&$html,$g_storage){
 	</div>
 	<div class="container">
 		<div class="row">
-<table>
-	<thead>
-		<tr>
-			<th>no</th>
-			<th>src</th>
-			<th>filename</th>
-			<th>link</th>
-		</tr>
-	</thead>
-	<tbody>
+
 	<?php 
-	$cn = 1;
-	foreach($data as $row) { ?>
-	<tr>
-		<td><?php echo $cn++; ?></td>
-		<?php foreach($row as $col) { ?>
-		<td><?php echo $col; ?></td>
-		<?php }?>
-	</tr>
-	<?php }?>
-	</tbody>
-</table>
+	foreach($data as $row) {
+		foreach($row as $col) {
+			echo $col . '<br />';
+		}
+	}?>
 		</div>
 		<footer>
 			<p>
-				ABC lisence
 			</p>
 		</footer>
 	</div>
