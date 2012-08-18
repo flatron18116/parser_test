@@ -15,8 +15,8 @@ $g_url = array_merge(array_diff($g_url,array("")));
 
 // ログインデータryushare
 $id = array(
-		'login'    => '3776481',
-		'password' => 'yr2y0n5j0e'
+		'login'    => 'xxxxx',
+		'password' => 'yxxxxx
 );
 // ログインクッキーを取得
 $iCookies = iLogin($id);
