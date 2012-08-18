@@ -1,8 +1,8 @@
 <?php 
 //config
 $data = "";
-
-if($_POST['mode'] === "analyze") {
+$mode = $_POST['mode'];
+if($mode === "analyze") {
 	include_once('lib/simplehtmldom_1_5/simple_html_dom.php');
 	
 	$data = array();
