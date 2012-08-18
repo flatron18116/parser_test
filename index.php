@@ -1,7 +1,7 @@
 <?php 
 //config
 $data = "";
-$mode = $_POST['mode'];
+$mode = isset($_POST['mode'])? $_POST['mode']:"";
 if($mode === "analyze") {
 	include_once('lib/simplehtmldom_1_5/simple_html_dom.php');
 	
