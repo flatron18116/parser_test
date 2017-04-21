@@ -1,4 +1,4 @@
-<?php 
+<?php
 //config
 
 include_once('lib/simplehtmldom_1_5/simple_html_dom.php');
@@ -37,7 +37,7 @@ foreach ($g_url as $d_url ) {
 	$param = iGetParam($d_url, $iCookies);
 	//DLurlを取得
 	$d_data[] = iGetUrl($d_url, $iCookies, $param);
-	
+
 	//src
 	//$d_data[] = '<a href="'.$d_url.'">src</a>';
 	//title
@@ -46,7 +46,7 @@ foreach ($g_url as $d_url ) {
 	//$d_data[] = makeLinkHtml($d_host,$d_html,$g_storage);
 
 	//結果表示配列にアサイン
-	$data[] = $d_data; 
+	$data[] = $d_data;
 
 	//コンテキストの解放
 	//$d_html->clear();
@@ -161,17 +161,17 @@ function makeTitleString($host,&$html){
 	//config
 	$prefix = "";
 	$rule = array();
-	
+
 	//input
 	$title = $html->find('title',0)->innertext;//title
-	
+
 	if(preg_match('/newidols\.net/', $host)){//http://newidols.net/
 		//rule
 		$rule[] = '/^(\[.+?\]) (.+) \– (.+)/u';
 		$rule[]  = '/^(\[.+?\]) (.+)/u';//名前とタイトルの区切りがない場合
-		
+
 		//prefix判定
-		$prefix = '[IV]';	
+		$prefix = '[IV]';
 		//titleの整形
 		if(preg_match_all($rule[0], $title, $m)) {
 			$title = '['.$m[2][0] . '] ' . $m[3][0] . ' ' . $m[1][0];
@@ -181,10 +181,10 @@ function makeTitleString($host,&$html){
 		}//正規表現にマッチしない場合はそのまま出力
 	} else if(preg_match('/idolex\.net/', $host)) {//http://idolex.net/
 		//poc
-		
+
 	} else if(preg_match('/javbest\.net/', $host)) {//http://javbest.net/
 		//poc
-		
+
 	}
 	return $prefix.$title;
 }
@@ -198,10 +198,10 @@ function makeLinkHtml($host,&$html,$g_storage){
 		}
 	} else if(preg_match('/idolex\.net/', $host)) {//http://idolex.net/
 		//poc
-	
+
 	} else if(preg_match('/javbest\.net/', $host)) {//http://javbest.net/
 		//poc
-	
+
 	}
 
 	return $link;
@@ -224,7 +224,7 @@ function makeLinkHtml($host,&$html,$g_storage){
 	<div class="container">
 		<div class="row">
 
-	<?php 
+	<?php
 	foreach($data as $row) {
 		foreach($row as $col) {
 			echo $col . '<br />';
