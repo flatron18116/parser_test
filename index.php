@@ -1,6 +1,4 @@
 <?php
-// コメント追加
-
 //config
 $data = "";
 $mode = isset($_POST['mode'])? $_POST['mode']:"";
