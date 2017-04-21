@@ -1,26 +1,28 @@
-<?php 
+<?php
+// コメント追加
+
 //config
 $data = "";
 $mode = isset($_POST['mode'])? $_POST['mode']:"";
 if($mode === "analyze") {
 	include_once('lib/simplehtmldom_1_5/simple_html_dom.php');
-	
+
 	$data = array();
 	$g_url = array();
 	$g_storage;
-	
+
 	//input
 	$g_storage = $_POST['storage'];
 	//改行文字で分割
 	$g_url = preg_split('/(\r\n|\r|\n)/', $_POST['urllist']);
 	//空行削除
 	$g_url = array_merge(array_diff($g_url,array("")));
-	
+
 	//storageのconfig情報を取得
 	include_once('config/'.$g_storage.'.php');
 	// ログインクッキーを取得
 	$iCookies = iLogin($id);
-	
+
 	//proc
 	//URL数分ループ
 	foreach ($g_url as $d_url ) {
@@ -28,16 +30,16 @@ if($mode === "analyze") {
 		$d_html;
 		$d_host;//host名
 		$d_title;//title
-	
+
 		//host名取得
 		$tmp_url = parse_url($d_url);
 		$d_host = $tmp_url['host'];//host名でパースルールを振り分ける
-	
+
 		//subumit用のparamを取得
 		$param = iGetParam($d_url, $iCookies);
 		//DLurlを取得
 		$d_data[] = iGetUrl($d_url, $iCookies, $param);
-	
+
 		//結果表示配列にアサイン
 		$data[] = $d_data;
 	}
@@ -60,7 +62,7 @@ if($mode === "analyze") {
 	<div class="container">
 	<?php if($data !== "") {?>
 	<div class="result"><pre>
-	<?php 
+	<?php
 	foreach($data as $row) {
 		foreach($row as $col) {
 			echo $col . '<br />';
@@ -69,7 +71,7 @@ if($mode === "analyze") {
 	</pre></div>
 	<?php }?>
 		<div class="row">
-<form action="index.php" method="post"> 
+<form action="index.php" method="post">
 <select name="storage">
 	<option>ryushare</option>
 	<option>rapidgator</option>
@@ -88,7 +90,7 @@ if($mode === "analyze") {
 	</div>
 </body>
 </html>
-<?php 
+<?php
 
 /**
  * ログイン
@@ -199,17 +201,17 @@ function makeTitleString($host,&$html){
 	//config
 	$prefix = "";
 	$rule = array();
-	
+
 	//input
 	$title = $html->find('title',0)->innertext;//title
-	
+
 	if(preg_match('/newidols\.net/', $host)){//http://newidols.net/
 		//rule
 		$rule[] = '/^(\[.+?\]) (.+) \– (.+)/u';
 		$rule[]  = '/^(\[.+?\]) (.+)/u';//名前とタイトルの区切りがない場合
-		
+
 		//prefix判定
-		$prefix = '[IV]';	
+		$prefix = '[IV]';
 		//titleの整形
 		if(preg_match_all($rule[0], $title, $m)) {
 			$title = '['.$m[2][0] . '] ' . $m[3][0] . ' ' . $m[1][0];
@@ -219,10 +221,10 @@ function makeTitleString($host,&$html){
 		}//正規表現にマッチしない場合はそのまま出力
 	} else if(preg_match('/idolex\.net/', $host)) {//http://idolex.net/
 		//poc
-		
+
 	} else if(preg_match('/javbest\.net/', $host)) {//http://javbest.net/
 		//poc
-		
+
 	}
 	return $prefix.$title;
 }
@@ -236,10 +238,10 @@ function makeLinkHtml($host,&$html,$g_storage){
 		}
 	} else if(preg_match('/idolex\.net/', $host)) {//http://idolex.net/
 		//poc
-	
+
 	} else if(preg_match('/javbest\.net/', $host)) {//http://javbest.net/
 		//poc
-	
+
 	}
 
 	return $link;
